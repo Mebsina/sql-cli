@@ -1,0 +1,9 @@
+[pytest]
+filterwarnings =
+    ignore::DeprecationWarning:requests_aws4auth.*
+    ignore::DeprecationWarning:pkg_resources.*
+    ignore::DeprecationWarning:typer.params.*
+    ignore::DeprecationWarning:pyfiglet.*
+    ignore:pkg_resources is deprecated as an API:DeprecationWarning
+    ignore:The 'is_flag' and 'flag_value' parameters are not supported by Typer:DeprecationWarning
+    ignore:datetime.datetime.utcnow.*:DeprecationWarning
