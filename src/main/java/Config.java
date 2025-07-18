@@ -1,3 +1,8 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;

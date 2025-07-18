@@ -1,3 +1,8 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.opensearch.sql.ppl.PPLService;
