@@ -13,7 +13,7 @@ class Literals:
     """Class for handling OpenSearch literals (keywords and functions)."""
 
     @staticmethod
-    def get_literals(language="sql"):
+    def get_literals(language="ppl"):
         """Parse literals JSON file based on language (sql or ppl).
 
         Args:
