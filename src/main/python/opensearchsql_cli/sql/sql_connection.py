@@ -71,14 +71,14 @@ class SqlConnection:
             return False
 
     def initialize_opensearch(
-        self, host_port=None, credentials=None, ignore_ssl=False, aws_auth=False
+        self, host_port=None, username_password=None, ignore_ssl=False, aws_auth=False
     ):
         """
         Initialize OpenSearch Cluster connection in the SQL library
 
         Args:
             host_port: Optional host:port string for OpenSearch Cluster connection
-            credentials: Optional username:password string for authentication
+            username_password: Optional username:password string for authentication
             ignore_ssl: Whether to ignore SSL certificate validation
             aws_auth: Whether to use AWS SigV4 authentication
 
@@ -92,13 +92,10 @@ class SqlConnection:
             return False
 
         try:
-            # Parse credentials if provided
-            if credentials and ":" in credentials:
-                self.username, self.password = credentials.split(":", 1)
-
-            # Store original host_port for Java connection
-            original_host_port = host_port if host_port else ""
-
+            # Parse username_password if provided
+            if username_password and ":" in username_password:
+                self.username, self.password = username_password.split(":", 1)
+            
             if aws_auth:
                 # AWS SigV4 authentication
                 if not host_port:
@@ -140,6 +137,7 @@ class SqlConnection:
                 # Parse host and port
                 if ":" in host_port:
                     self.host, port_str = host_port.split(":", 1)
+
                     try:
                         self.port_num = int(port_str)
                     except ValueError:
@@ -150,6 +148,11 @@ class SqlConnection:
                         return False
                 else:
                     self.host = host_port
+                    # Set default port based on protocol
+                    if self.protocol.lower() == "http":
+                        self.port_num = 9200
+                    elif self.protocol.lower() == "https":
+                        self.port_num = 443
 
                 # Verify connection using parsed values
                 success, message, version, url, username = (
@@ -182,39 +185,7 @@ class SqlConnection:
                     self.password,
                     ignore_ssl,
                 )
-            else:
-                # Use default values
-                success, message, version, url, username = (
-                    VerifyCluster.verify_opensearch_connection(
-                        self.host,
-                        self.port_num,
-                        self.protocol,
-                        self.username,
-                        self.password,
-                        ignore_ssl,
-                    )
-                )
-                if not success:
-                    self.opensearch_connected = False
-                    self.error_message = message
-                    return False
-
-                # Store connection information
-                self.version = version
-                self.url = url
-                if username:
-                    self.username = username
-
-                # If verification succeeded, initialize the connection in Java
-                result = self.sql_lib.entry_point.initializeConnection(
-                    self.host,
-                    self.port_num,
-                    self.protocol,
-                    self.username,
-                    self.password,
-                    ignore_ssl,
-                )
-
+            
             # Check for successful initialization
             if "Connection initialized" in result or "Already initialized" in result:
                 self.opensearch_connected = True
