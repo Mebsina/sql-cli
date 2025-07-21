@@ -69,9 +69,10 @@ class SqlVersion:
             return False
 
         # Check if the JAR file exists
-        # Get the project root directory since this file is in main/opensearch_cli/sql/
+        # sql-cli/src/main/python/opensearchsql_cli/sql
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
+        # sql-cli/
+        project_root = os.path.normpath(os.path.join(current_dir, "../../../../../"))
         jar_path = self.get_jar_path(project_root)
 
         # Create gradle task name with underscores (e.g., "2.19.1.0" -> "v2_19_1_0")
