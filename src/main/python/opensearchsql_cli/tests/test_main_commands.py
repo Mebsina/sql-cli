@@ -114,7 +114,10 @@ class TestCommands:
 
         # Mock the necessary components to avoid actual connections
         mock_sql_connection.connect.return_value = True
-        mock_sql_connection.initialize_opensearch.return_value = connection_success
+        mock_sql_connection.verify_opensearch_connection.return_value = (
+            connection_success
+        )
+        mock_sql_connection.initialize_sql_library.return_value = connection_success
         mock_sql_connection.version = "2.0.0"
 
         # Set error message if provided

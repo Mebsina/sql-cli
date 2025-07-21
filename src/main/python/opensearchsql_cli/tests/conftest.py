@@ -17,7 +17,8 @@ def mock_sql_connection():
     """
     mock = MagicMock()
     mock.connect.return_value = True
-    mock.initialize_opensearch.return_value = True
+    mock.verify_opensearch_connection.return_value = True
+    mock.initialize_sql_library.return_value = True
     mock.version = "2.0.0"
     mock.url = "http://test:9200"
     mock.username = "admin"
