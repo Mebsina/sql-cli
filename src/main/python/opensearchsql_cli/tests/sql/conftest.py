@@ -83,10 +83,9 @@ def mock_java_gateway():
     Fixture that returns a mock JavaGateway instance.
     """
     mock = MagicMock()
-    mock.entry_point.initializeConnection.return_value = "Connection initialized"
-    mock.entry_point.initializeAwsConnection.return_value = "Connection initialized"
+    mock.entry_point.initializeConnection.return_value = True
+    mock.entry_point.initializeAwsConnection.return_value = True
     mock.entry_point.queryExecution.return_value = '{"result": "test data"}'
-    mock.entry_point.disconnect.return_value = "Disconnected"
     return mock
 
 
