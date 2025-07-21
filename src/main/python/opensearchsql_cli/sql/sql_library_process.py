@@ -103,7 +103,9 @@ class SqlLibraryManager:
             # sql-cli/src/main/python/opensearchsql_cli/sql
             current_dir = os.path.dirname(os.path.abspath(__file__))
             # sql-cli/
-            project_root = os.path.normpath(os.path.join(current_dir, "../../../../../"))
+            project_root = os.path.normpath(
+                os.path.join(current_dir, "../../../../../")
+            )
 
             # Use the Java directory for logging
             java_dir = os.path.join(project_root, "src", "main", "java")

@@ -95,7 +95,7 @@ class SqlConnection:
             # Parse username_password if provided
             if username_password and ":" in username_password:
                 self.username, self.password = username_password.split(":", 1)
-            
+
             if aws_auth:
                 # AWS SigV4 authentication
                 if not host_port:
@@ -185,7 +185,7 @@ class SqlConnection:
                     self.password,
                     ignore_ssl,
                 )
-            
+
             # Check for successful initialization
             if "Connection initialized" in result or "Already initialized" in result:
                 self.opensearch_connected = True
