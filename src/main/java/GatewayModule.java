@@ -84,7 +84,7 @@ public class GatewayModule extends AbstractModule {
     this.ignoreSSL = false;
     this.useAwsAuth = true;
     this.awsEndpoint = awsEndpoint;
-    this.awsRegion = null; 
+    this.awsRegion = null;
   }
 
   @Override
