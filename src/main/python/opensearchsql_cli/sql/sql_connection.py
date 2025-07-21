@@ -40,41 +40,15 @@ class SqlConnection:
         self.username = None
         self.password = None
 
-    def connect(self):
-        """
-        Connect to the SQL library
+        # Store OpenSearch verification results
+        self.cluster_version = None
+        self.url = None
 
-        Returns:
-            bool: True if connection successful, False otherwise
-        """
-        try:
-            # Start the SQL Library server if it's not already running
-            with console.status("Creating SQL Library connection...", spinner="dots"):
-                if not sql_library_manager.started:
-                    if not sql_library_manager.start():
-                        console.print(
-                            "[bold red]Failed to connect SQL Library[/bold red]"
-                        )
-                        return False
-
-                # Connect to the SQL Library
-                self.sql_lib = JavaGateway(
-                    gateway_parameters=GatewayParameters(port=self.gateway_port)
-                )
-                self.sql_connected = True
-                return True
-        except Exception as e:
-            console.print(
-                f"[bold red]Failed to connect to SQL on port {self.gateway_port}: {e}[/bold red]"
-            )
-            self.sql_connected = False
-            return False
-
-    def initialize_opensearch(
+    def verify_opensearch_connection(
         self, host_port=None, username_password=None, ignore_ssl=False, aws_auth=False
     ):
         """
-        Initialize OpenSearch Cluster connection in the SQL library
+        Verify connection to an OpenSearch cluster
 
         Args:
             host_port: Optional host:port string for OpenSearch Cluster connection
@@ -85,12 +59,6 @@ class SqlConnection:
         Returns:
             bool: True if successful, False otherwise
         """
-        if not self.sql_connected or not self.sql_lib:
-            console.print(
-                "[bold red]ERROR:[/bold red] Unable to connect the SQL library"
-            )
-            return False
-
         try:
             # Parse username_password if provided
             if username_password and ":" in username_password:
@@ -112,23 +80,20 @@ class SqlConnection:
                 self.host = host_port
 
                 # Verify AWS connection
-                success, message, version, url, region = (
+                success, message, cluster_version, url, region = (
                     VerifyCluster.verify_aws_opensearch_connection(host_port)
                 )
                 if not success:
-                    self.opensearch_connected = False
                     self.error_message = message
                     return False
 
                 # Store connection information
-                self.version = version
+                self.cluster_version = cluster_version
                 self.url = url
                 self.username = (
-                    f"AWS {region}"  # Use region as the "username" for AWS connections
+                    f"{region}"  # Use region as the "username" for AWS connections
                 )
-
-                # If verification succeeded, initialize the connection in Java
-                result = self.sql_lib.entry_point.initializeAwsConnection(host_port)
+                return True
             elif host_port:
                 # Handle URLs with protocol
                 if "://" in host_port:
@@ -144,7 +109,6 @@ class SqlConnection:
                         console.print(
                             f"[bold red]ERROR:[/bold red] [red]Invalid port: {port_str}[/red]"
                         )
-                        self.opensearch_connected = False
                         return False
                 else:
                     self.host = host_port
@@ -155,7 +119,7 @@ class SqlConnection:
                         self.port_num = 443
 
                 # Verify connection using parsed values
-                success, message, version, url, username = (
+                success, message, cluster_version, url, username = (
                     VerifyCluster.verify_opensearch_connection(
                         self.host,
                         self.port_num,
@@ -166,17 +130,50 @@ class SqlConnection:
                     )
                 )
                 if not success:
-                    self.opensearch_connected = False
                     self.error_message = message
                     return False
 
                 # Store connection information
-                self.version = version
+                self.cluster_version = cluster_version
                 self.url = url
                 if username:
                     self.username = username
 
-                # If verification succeeded, initialize the connection in Java
+                return True
+
+            return False
+
+        except Exception as e:
+            self.error_message = f"Unable to connect to {host_port}: {str(e)}"
+            return False
+
+    def initialize_sql_library(
+        self, host_port=None, username_password=None, ignore_ssl=False, aws_auth=False
+    ):
+        """
+        Initialize SQL Library with OpenSearch connection parameters.
+        This is called after verify_opensearch_connection has succeeded.
+        This will also connect to the SQL library if it's not already connected.
+
+        Args:
+            host_port: Optional host:port string for OpenSearch Cluster connection
+            username_password: Optional username:password string for authentication
+            ignore_ssl: Whether to ignore SSL certificate validation
+            aws_auth: Whether to use AWS SigV4 authentication
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        # Connect to the SQL library if not already connected
+        if not self.sql_connected or not self.sql_lib:
+            if not self.connect():
+                return False
+
+        try:
+            # Initialize the connection in Java based on the verification results
+            if aws_auth:
+                result = self.sql_lib.entry_point.initializeAwsConnection(self.host)
+            else:
                 result = self.sql_lib.entry_point.initializeConnection(
                     self.host,
                     self.port_num,
@@ -187,22 +184,44 @@ class SqlConnection:
                 )
 
             # Check for successful initialization
-            if "Connection initialized" in result or "Already initialized" in result:
+            if result:
                 self.opensearch_connected = True
                 return True
-
-            # Check for specific error conditions
-            if "Error:" in result:
-                self.error_message = result
+            else:
+                self.error_message = "Failed to initialize SQL library"
                 self.opensearch_connected = False
                 return False
 
-            self.opensearch_connected = True
-            return True
-
         except Exception as e:
-            self.error_message = f"Unable to connect to {host_port}: {str(e)}"
+            self.error_message = f"Unable to initialize SQL library: {str(e)}"
             self.opensearch_connected = False
+            return False
+
+    def connect(self):
+        """
+        Connect to the SQL library
+
+        Returns:
+            bool: True if connection successful, False otherwise
+        """
+        try:
+            # Start the SQL Library server if it's not already running
+            if not sql_library_manager.started:
+                if not sql_library_manager.start():
+                    console.print("[bold red]Failed to connect SQL Library[/bold red]")
+                    return False
+
+            # Connect to the SQL Library
+            self.sql_lib = JavaGateway(
+                gateway_parameters=GatewayParameters(port=self.gateway_port)
+            )
+            self.sql_connected = True
+            return True
+        except Exception as e:
+            console.print(
+                f"[bold red]Failed to connect to SQL on port {self.gateway_port}: {e}[/bold red]"
+            )
+            self.sql_connected = False
             return False
 
     def query_executor(self, query: str, is_ppl: bool = True, format: str = "json"):
@@ -233,25 +252,6 @@ class SqlConnection:
         # queryExecution inside of Gateway.java
         result = query_service.queryExecution(query, is_ppl, format)
         return result
-
-    def disconnect(self):
-        """
-        Notify SQL Library that OpenSearch CLI is disconnecting
-
-        Returns:
-            bool: True if successful, False otherwise
-        """
-        try:
-            if self.sql_connected and self.sql_lib:
-                result = self.sql_lib.entry_point.disconnect()
-                self.sql_connected = False
-                self.opensearch_connected = False
-
-                return True
-        except Exception as e:
-            console.print(f"[bold red]Disconnect ERROR:[/bold red] [red]{e}[/red]")
-            return False
-        return False
 
 
 # Create a global connection instance

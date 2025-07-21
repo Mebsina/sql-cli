@@ -53,9 +53,6 @@ class OpenSearchSQLCLI:
 
     def cleanup_on_exit(self):
         """Cleanup function called when CLI exits"""
-        if self.sql_connection.sql_connected:
-            self.sql_connection.disconnect()
-
         # Stop the SQL Library server
         if sql_library_manager.started:
             sql_library_manager.stop()
@@ -143,10 +140,6 @@ class OpenSearchSQLCLI:
             if format is None:
                 format = config_manager.get("Query", "format", "table")
 
-            # Connect to SQL library
-            if not self.sql_connection.connect():
-                return
-
             # Initialize OpenSearch connection
             if endpoint is None or endpoint == "":
                 host_port = config_manager.get("Connection", "endpoint", "")
@@ -177,13 +170,24 @@ class OpenSearchSQLCLI:
                 # Set aws_auth to False when not provided
                 aws_auth = False
 
-            # Initialize OpenSearch connection
             print("")
             with console.status("Verifying OpenSearch connection...", spinner="dots"):
-                if not self.sql_connection.initialize_opensearch(
+                if not self.sql_connection.verify_opensearch_connection(
                     host_port, username_password, ignore_ssl, aws_auth
                 ):
-                    # Display error message if available
+                    if (
+                        hasattr(self.sql_connection, "error_message")
+                        and self.sql_connection.error_message
+                    ):
+                        console.print(
+                            f"[bold red]ERROR:[/bold red] [red]{self.sql_connection.error_message}[/red]\n"
+                        )
+                    return
+
+            with console.status("Initializing SQL Library...", spinner="dots"):
+                if not self.sql_connection.initialize_sql_library(
+                    host_port, username_password, ignore_ssl, aws_auth
+                ):
                     if (
                         hasattr(self.sql_connection, "error_message")
                         and self.sql_connection.error_message
@@ -199,25 +203,17 @@ class OpenSearchSQLCLI:
 
             # Display OpenSearch connection information
             console.print(
-                f"[green]OpenSearch:[/green] [dim white]v{self.sql_connection.version}[/dim white]"
+                f"[green]OpenSearch:[/green] [dim white]v{self.sql_connection.cluster_version}[/dim white]"
             )
             console.print(f"[green]Endpoint:[/green] {self.sql_connection.url}")
-            if (
-                hasattr(self.sql_connection, "username")
-                and self.sql_connection.username
-            ):
-                # Check if this is an AWS connection
-                if (
-                    self.sql_connection.username
-                    and self.sql_connection.username.startswith("AWS")
-                ):
-                    region = self.sql_connection.username.replace("AWS ", "")
+            if hasattr(self.sql_connection, "username") and self.sql_connection.username:
+                if aws_auth:
+                    # For AWS connections, display the region
                     console.print(
-                        f"[green]Region:[/green] [dim white]{region}[/dim white]"
+                        f"[green]Region:[/green] [dim white]{self.sql_connection.username}[/dim white]"
                     )
-                elif (
-                    self.sql_connection.username
-                ):  # Only display User if there is a username
+                else:
+                    # For regular connections, display the username
                     console.print(
                         f"[green]User:[/green] [dim white]{self.sql_connection.username}[/dim white]"
                     )
