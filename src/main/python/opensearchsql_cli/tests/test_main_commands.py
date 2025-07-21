@@ -127,7 +127,7 @@ class TestCommands:
         # Set URL and username based on endpoint type
         if aws_auth:
             mock_sql_connection.url = aws_auth
-            mock_sql_connection.username = "AWS us-west-2"
+            mock_sql_connection.username = "us-west-2"
         elif username_password and (endpoint and endpoint.startswith("https")):
             # Set username for HTTPS connections
             mock_sql_connection.url = endpoint
@@ -223,7 +223,7 @@ class TestCommands:
     )
     @patch("opensearchsql_cli.main.sql_connection")
     @patch("opensearchsql_cli.main.sql_library_manager")
-    @patch("opensearchsql_cli.main.sql_version_manager")
+    @patch("opensearchsql_cli.main.sql_version")
     @patch("opensearchsql_cli.main.config_manager")
     @patch("opensearchsql_cli.main.console")
     @patch("opensearchsql_cli.main.pyfiglet.figlet_format")
@@ -315,7 +315,7 @@ class TestCommands:
     )
     @patch("opensearchsql_cli.main.sql_connection")
     @patch("opensearchsql_cli.main.sql_library_manager")
-    @patch("opensearchsql_cli.main.sql_version_manager")
+    @patch("opensearchsql_cli.main.sql_version")
     @patch("opensearchsql_cli.main.config_manager")
     @patch("opensearchsql_cli.main.console")
     @patch("opensearchsql_cli.main.pyfiglet.figlet_format")
@@ -390,7 +390,7 @@ class TestCommands:
     )
     @patch("opensearchsql_cli.main.sql_connection")
     @patch("opensearchsql_cli.main.sql_library_manager")
-    @patch("opensearchsql_cli.main.sql_version_manager")
+    @patch("opensearchsql_cli.main.sql_version")
     @patch("opensearchsql_cli.main.config_manager")
     @patch("opensearchsql_cli.main.console")
     @patch("opensearchsql_cli.main.pyfiglet.figlet_format")
@@ -456,7 +456,7 @@ class TestCommands:
     )
     @patch("opensearchsql_cli.main.sql_connection")
     @patch("opensearchsql_cli.main.sql_library_manager")
-    @patch("opensearchsql_cli.main.sql_version_manager")
+    @patch("opensearchsql_cli.main.sql_version")
     @patch("opensearchsql_cli.main.config_manager")
     @patch("opensearchsql_cli.main.console")
     @patch("opensearchsql_cli.main.pyfiglet.figlet_format")
@@ -521,7 +521,7 @@ class TestCommands:
     )
     @patch("opensearchsql_cli.main.sql_connection")
     @patch("opensearchsql_cli.main.sql_library_manager")
-    @patch("opensearchsql_cli.main.sql_version_manager")
+    @patch("opensearchsql_cli.main.sql_version")
     @patch("opensearchsql_cli.main.config_manager")
     @patch("opensearchsql_cli.main.console")
     @patch("opensearchsql_cli.main.pyfiglet.figlet_format")

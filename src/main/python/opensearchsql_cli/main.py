@@ -15,7 +15,7 @@ from rich.status import Status
 from .sql import sql_connection
 from .query import SavedQueries
 from .sql.sql_library_manager import sql_library_manager
-from .sql.sql_version import sql_version_manager
+from .sql.sql_version import sql_version
 from .config.config import config_manager
 from .interactive_shell import InteractiveShell
 
@@ -123,14 +123,14 @@ class OpenSearchSQLCLI:
             # Set version if provided via command line or from config file
             if version:
                 # Version provided via command line
-                success = sql_version_manager.set_version(version, rebuild)
+                success = sql_version.set_version(version, rebuild)
                 if not success:
                     return
             # else:
             #     # Try to get version from config file
             #     config_version = config_manager.get("Query", "version", None)
             #     if config_version:
-            #         success = sql_version_manager.set_version(config_version, rebuild)
+            #         success = sql_version.set_version(config_version, rebuild)
             #         if not success:
             #             return
 
@@ -218,7 +218,7 @@ class OpenSearchSQLCLI:
                         f"[green]User:[/green] [dim white]{self.sql_connection.username}[/dim white]"
                     )
             console.print(
-                f"[green]SQL:[/green] [dim white]v{sql_version_manager.version}[/dim white]"
+                f"[green]SQL:[/green] [dim white]v{sql_version.version}[/dim white]"
             )
             console.print(
                 f"[green]Language:[/green] [dim white]{language.upper()}[/dim white]"

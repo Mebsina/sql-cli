@@ -13,7 +13,7 @@ import time
 import threading
 import socket
 from datetime import datetime
-from .sql_version import sql_version_manager
+from .sql_version import sql_version
 
 
 class SqlLibraryManager:
@@ -129,7 +129,7 @@ class SqlLibraryManager:
             # if use --version or -v then use accordingly, else './gradlew' run only for development
             if len(sys.argv) > 1 and ("--version" in sys.argv or "-v" in sys.argv):
                 # Use the JAR file according to Sql plugin version
-                jar_path = sql_version_manager.get_jar_path(project_root)
+                jar_path = sql_version.get_jar_path(project_root)
                 cmd = ["java", "-jar", jar_path, "Gateway"]
                 self.logger.info(f"Using JAR file: {jar_path}")
             else:

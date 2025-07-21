@@ -36,7 +36,7 @@ def mock_sql_library_manager():
 
 
 @pytest.fixture
-def mock_sql_version_manager():
+def mock_sql_version():
     """
     Fixture that returns a mock SQL version manager.
     """

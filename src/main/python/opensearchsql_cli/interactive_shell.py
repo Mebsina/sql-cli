@@ -21,7 +21,7 @@ from .sql import sql_connection
 from .query import ExecuteQuery
 from .literals import Literals
 from .config.config import config_manager
-from .sql.sql_version import sql_version_manager
+from .sql.sql_version import sql_version
 
 # Create a console instance for rich formatting
 console = Console()
@@ -221,7 +221,7 @@ class InteractiveShell:
                 # Handle help command
                 if user_cmd in ["help", "-h", "--help"]:
                     console.print(
-                        f"[green]\nSQL:[/green] [dim white]v{sql_version_manager.version}[/dim white]"
+                        f"[green]\nSQL:[/green] [dim white]v{sql_version.version}[/dim white]"
                     )
                     console.print(
                         f"[green]Language:[/green] [dim white]{self.language_mode}[/dim white]"
