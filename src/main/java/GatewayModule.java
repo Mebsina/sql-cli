@@ -62,18 +62,6 @@ public class GatewayModule extends AbstractModule {
   private final String awsEndpoint;
   private final String awsRegion;
 
-  public GatewayModule() {
-    this("localhost", 9200, "http", null, null, false);
-  }
-
-  public GatewayModule(String host, int port) {
-    this(host, port, "http", null, null, false);
-  }
-
-  public GatewayModule(String host, int port, String protocol) {
-    this(host, port, protocol, null, null, false);
-  }
-
   public GatewayModule(
       String host, int port, String protocol, String username, String password, boolean ignoreSSL) {
     this.host = host;
@@ -96,7 +84,7 @@ public class GatewayModule extends AbstractModule {
     this.ignoreSSL = false;
     this.useAwsAuth = true;
     this.awsEndpoint = awsEndpoint;
-    this.awsRegion = null; // Region will be read from ~/.aws/config
+    this.awsRegion = null; 
   }
 
   @Override
