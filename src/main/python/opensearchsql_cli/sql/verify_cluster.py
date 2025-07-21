@@ -97,7 +97,7 @@ class VerifyCluster:
         except Exception as e:
             err_str = str(e)
             # print(err_str)
-            if any(e in err_str for e in ("NewConnectionError", "RemoteDisconnected")):
+            if any(e in err_str for e in ("NewConnectionError", "RemoteDisconnected", "NameResolutionError")):
                 error_msg = f"Unable to connect {url}"
             elif "ConnectTimeoutError" in err_str:
                 error_msg = f"Connection timeout at {url}"
