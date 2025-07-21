@@ -100,9 +100,10 @@ class SqlLibraryManager:
                 if not self._kill_process_on_port():
                     return False
 
-            # Get the project root directory since this file is in main/opensearch_cli/sql/
+            # sql-cli/src/main/python/opensearchsql_cli/sql
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
+            # sql-cli/
+            project_root = os.path.normpath(os.path.join(current_dir, "../../../../../"))
 
             # Use the Java directory for logging
             java_dir = os.path.join(project_root, "src", "main", "java")
@@ -133,7 +134,7 @@ class SqlLibraryManager:
                 # Use Gradle to run the Gateway class (for development)
                 # this will be removed and use 3.1 as default
                 cmd = ["./gradlew", "run", "--args=Gateway"]
-                self.logger.info("Using ./gradle run for development")
+                self.logger.info("Using ./gradlew run for development")
 
             self.logger.info(f"Command: {' '.join(cmd)}")
 
