@@ -7,7 +7,7 @@ Handles connection to SQL library and OpenSearch Cluster configuration.
 from py4j.java_gateway import JavaGateway, GatewayParameters
 import sys
 from rich.console import Console
-from .sql_library_process import sql_library_manager
+from .sql_library_manager import sql_library_manager
 from .verify_cluster import VerifyCluster
 from ..config.config import config_manager
 

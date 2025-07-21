@@ -1,12 +1,12 @@
 """
-Tests for SQL Library Process.
+Tests for SQL Library Manager.
 
-This module contains tests for the SQL Library Process functionality.
+This module contains tests for the SQL Library Manager functionality.
 """
 
 import pytest
 from unittest.mock import patch, MagicMock
-from opensearchsql_cli.sql.sql_library_process import SqlLibraryManager
+from opensearchsql_cli.sql.sql_library_manager import SqlLibraryManager
 
 
 class TestSqlLibraryManager:
@@ -35,15 +35,15 @@ class TestSqlLibraryManager:
             ),
         ],
     )
-    @patch("opensearchsql_cli.sql.sql_library_process.subprocess.Popen")
-    @patch("opensearchsql_cli.sql.sql_library_process.threading.Thread")
-    @patch("opensearchsql_cli.sql.sql_library_process.logging")
-    @patch("opensearchsql_cli.sql.sql_library_process.os.path.join")
+    @patch("opensearchsql_cli.sql.sql_library_manager.subprocess.Popen")
+    @patch("opensearchsql_cli.sql.sql_library_manager.threading.Thread")
+    @patch("opensearchsql_cli.sql.sql_library_manager.logging")
+    @patch("opensearchsql_cli.sql.sql_library_manager.os.path.join")
     @patch(
-        "opensearchsql_cli.sql.sql_library_process.SqlLibraryManager._check_port_in_use"
+        "opensearchsql_cli.sql.sql_library_manager.SqlLibraryManager._check_port_in_use"
     )
     @patch(
-        "opensearchsql_cli.sql.sql_library_process.SqlLibraryManager._kill_process_on_port"
+        "opensearchsql_cli.sql.sql_library_manager.SqlLibraryManager._kill_process_on_port"
     )
     def test_gateway_connection(
         self,

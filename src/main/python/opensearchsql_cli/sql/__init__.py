@@ -5,6 +5,6 @@ This package provides functionality for SQL and PPL query execution in SQL Libra
 """
 
 from .sql_connection import sql_connection
-from .sql_library_process import sql_library_manager
+from .sql_library_manager import sql_library_manager
 from .sql_version import sql_version_manager
 from .verify_cluster import VerifyCluster

@@ -14,7 +14,7 @@ from rich.console import Console
 from rich.status import Status
 from .sql import sql_connection
 from .query import SavedQueries
-from .sql.sql_library_process import sql_library_manager
+from .sql.sql_library_manager import sql_library_manager
 from .sql.sql_version import sql_version_manager
 from .config.config import config_manager
 from .interactive_shell import InteractiveShell
