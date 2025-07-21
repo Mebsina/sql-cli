@@ -134,4 +134,4 @@ class SqlVersion:
 
 
 # Create a global instance
-sql_version_manager = SqlVersion()
+sql_version = SqlVersion()
