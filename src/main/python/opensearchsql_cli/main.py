@@ -206,7 +206,7 @@ class OpenSearchSQLCLI:
                 f"[green]OpenSearch:[/green] [dim white]v{self.sql_connection.cluster_version}[/dim white]"
             )
             console.print(f"[green]Endpoint:[/green] {self.sql_connection.url}")
-            if hasattr(self.sql_connection, "username") and self.sql_connection.username:
+            if self.sql_connection.username:
                 if aws_auth:
                     # For AWS connections, display the region
                     console.print(
