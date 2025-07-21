@@ -97,8 +97,8 @@ public class Client {
                   });
 
       // Use the builder for the high-level client
-      RestHighLevelClient highLevelClient = new RestHighLevelClient(restClientBuilder);
-      return new OpenSearchRestClientImpl(highLevelClient);
+      RestHighLevelClient restHighLevelClient = new RestHighLevelClient(restClientBuilder);
+      return new OpenSearchRestClientImpl(restHighLevelClient);
     } catch (Exception e) {
       throw new RuntimeException("Failed to create AWS OpenSearchClient", e);
     }
