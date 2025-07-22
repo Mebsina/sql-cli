@@ -6,21 +6,27 @@ import re
 import ast
 from setuptools import setup, find_packages
 
+install_requirements = [
+    # SQL CLI
+    "markdown-it-py==3.0.0",
+    "mdurl==0.1.2",
+    "prompt_toolkit==3.0.51",
+    "Pygments==2.19.2",
+    "PyYAML==6.0.2",
+    "rich==14.0.0",
+    "shellingham==1.5.4",
+    "typer==0.16.0",
+    "typing_extensions==4.14.1",
+    # Java Gateway Python
+    "py4j==0.10.9.9",
+]
+
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 
 with open("src/main/python/opensearchsql_cli/__init__.py", "rb") as f:
     version = str(
         ast.literal_eval(_version_re.search(f.read().decode("utf-8")).group(1))
     )
-
-
-def parse_requirements(filename):
-    """Read requirements file and return list of packages"""
-    with open(filename, "r") as f:
-        lines = f.readlines()
-    # Remove comments and empty lines, strip whitespace if needed
-    reqs = [line.strip() for line in lines if line.strip() and not line.startswith("#")]
-    return reqs
 
 
 description = "OpenSearch SQL CLI with SQL Plug-in Version Selection"
@@ -41,7 +47,7 @@ setup(
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=parse_requirements("requirements-dev.txt"),
+    install_requires=install_requirements,
     entry_points={"console_scripts": ["opensearchsql=opensearchsql_cli.main:main"]},
     classifiers=[
         "Intended Audience :: Developers",
