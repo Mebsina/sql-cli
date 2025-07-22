@@ -111,15 +111,19 @@ To install the SQL CLI:
 
 ### Defaults: if no arguments provided
 - **Language**: PPL  
-- **Endpoint**: `localhost:9200`  
+- **Endpoint**: `http://localhost:9200`  
 - **Output Format**: Table  
 - **SQL Plugin Version**: `3.1.0.0`
 
+### If not specify protocol or port number
+  - The default protocol is **HTTP** with port number **9200**. 
+  - If using **HTTPS** without specifying a port, port **443** is used by default.
+
 | Options                               | Description                                                                   |
 |---------------------------------------|-------------------------------------------------------------------------------|
-| `-e`, `--endpoint` `<host:port>`      | Set the OpenSearch endpoint (e.g., `localhost:9200` or `https://domain:port`) |
+| `-e`, `--endpoint` `<host:port>`      | Set the OpenSearch endpoint (e.g., `protocol://domain:port`) |
 | `-u`, `--user` `<username:password>`  | Provide credentials for secure clusters                                       |
-| `-k`, `--insecure`                    | Ignore SSL certificate verification (use with `https://`)                     |
+| `-k`, `--insecure`                    | Ignore SSL certificate verification (use with `https` protocol)                     |
 | `-l`, `--language` `<language>`       | Choose query language: `ppl` or `sql`                                         |
 | `-f`, `--format` `<format>`           | Set output format: `table`, `json`, or `csv`                                  |
 | `-v`, `--version` `<version>`         | Set OpenSearch SQL plugin version (e.g., `3.1`, `2.19`)                       |
@@ -198,7 +202,7 @@ You can also configure the following connection properties:
 | `language` | Query language                         | `ppl`, `sql`               | `ppl`    |
 | `format`   | Output format                          | `table`, `json`, `csv`     | `table`  |
 | `vertical` | Use vertical table display mode        | `true` / `false`           | `false`  |
-| `version`  | SQL plugin version (as a string)       | `"2.14"`                   | `""`     |
+| `version`  | SQL plugin version (as a string)       | `"2.19"`                   | `""`     |
 
 ### SQL Plugin Settings
 
@@ -226,14 +230,16 @@ For a list of all available configurations, see [config.yaml](src/main/python/op
     ```
 
 
-1. Run a simple SQL command in OpenSearch SQL CLI:
+1. Run a simple SQL/PPL command in OpenSearch SQL CLI:
 
     ```sql
-    SELECT * FROM accounts
+    # PPL
     source=accounts
+    # SQL
+    SELECT * FROM accounts
     ```
 
-The CLI supports all types of query that OpenSearch SQL supports. Refer to [OpenSearch SQL basic usage documentation.](https://github.com/opensearch-project/sql/blob/main/docs/user/dql/basics.rst)
+The CLI supports all types of query that OpenSearch PPL/SQL supports. Refer to [OpenSearch SQL basic usage documentation.](https://github.com/opensearch-project/sql/blob/main/docs/user/dql/basics.rst)
 
 
 ## Code of Conduct
@@ -252,5 +258,3 @@ See the [LICENSE](LICENSE.TXT) file for our project's licensing. We will ask you
 ## Copyright
 
 Copyright OpenSearch Contributors. See [NOTICE](NOTICE) for details.
-
-
