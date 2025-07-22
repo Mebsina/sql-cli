@@ -191,7 +191,15 @@ class TestCommands:
     @pytest.mark.parametrize(
         "test_id, description, endpoint, username_password, insecure, expected_success, error_message",
         [
-            (1, "HTTP success", "test:9200", None, False, True, None),
+            (
+                1,
+                "HTTP success",
+                "test:9200",
+                None,
+                False,
+                True,
+                None,
+            ),
             (
                 2,
                 "HTTPS success with auth",

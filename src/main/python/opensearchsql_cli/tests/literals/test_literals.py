@@ -41,7 +41,11 @@ class TestLiterals:
         ],
     )
     def test_get_literals_loads_json_files(
-        self, language, expected_keyword, expected_function, mock_data
+        self,
+        language,
+        expected_keyword,
+        expected_function,
+        mock_data,
     ):
         """
         Test case 1: Verify that the JSON files for PPL and SQL are loaded correctly.
