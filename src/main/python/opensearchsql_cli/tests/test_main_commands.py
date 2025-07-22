@@ -390,10 +390,22 @@ class TestCommands:
         self.print_test_info(f"{description} (Test #{test_id})", test_result)
 
     @pytest.mark.parametrize(
-        "test_id, description, language, expected_display",
+        "test_id, description, command_type, value, expected_display, rebuild, version_success",
         [
-            (1, "PPL language", "ppl", "PPL"),
-            (2, "Language missing argument", None, None),
+            # Language tests
+            (1, "PPL language", "language", "ppl", "PPL", False, True),
+            (2, "SQL language", "language", "sql", "SQL", False, True),
+            (3, "Language missing argument", "language", None, None, False, True),
+            # Format tests
+            (4, "Table format", "format", "table", "TABLE", False, True),
+            (5, "JSON format", "format", "json", "JSON", False, True),
+            (6, "CSV format", "format", "csv", "CSV", False, True),
+            (7, "Format missing argument", "format", None, None, False, True),
+            # Version tests
+            (8, "Valid version", "version", "3.1", "v3.1", False, True),
+            (9, "Version with rebuild flag", "version", "3.1", "v3.1", True, True),
+            (10, "Invalid version", "version", "invalid", None, False, False),
+            (11, "Version missing argument", "version", None, None, False, True),
         ],
     )
     @patch("opensearchsql_cli.main.sql_connection")
@@ -402,7 +414,7 @@ class TestCommands:
     @patch("opensearchsql_cli.main.config_manager")
     @patch("opensearchsql_cli.main.console")
     @patch("opensearchsql_cli.main.pyfiglet.figlet_format")
-    def test_language_command(
+    def test_others_commands(
         self,
         mock_figlet,
         mock_console,
@@ -412,153 +424,49 @@ class TestCommands:
         mock_sql_connection,
         test_id,
         description,
-        language,
+        command_type,
+        value,
         expected_display,
-    ):
-        """
-        Test the -l/--language command for different language options.
-        """
-
-        self.print_test_info(f"{description} (Test #{test_id})")
-
-        if language == None:
-            # Test missing argument case
-            result, test_result = self._check_missing_arg(
-                "-l", "Option '-l' requires an argument"
-            )
-        else:
-            # Setup test environment
-            cli, command_args = self.setup_cli_test(
-                mock_console,
-                mock_config_manager,
-                mock_version_manager,
-                mock_library_manager,
-                mock_sql_connection,
-                mock_figlet,
-                endpoint="test:9200",
-                language=language,
-            )
-
-            result = runner.invoke(cli.app, command_args)
-
-            assert result.exit_code == 0
-
-            # Verify that the language was displayed correctly
-            mock_console.print.assert_any_call(
-                f"[green]Language:[/green] [dim white]{expected_display}[/dim white]"
-            )
-
-            # Verify that shell.start was called with the correct language parameter
-            cli.shell.start.assert_called_once_with(language, "table")
-
-            test_result = f"Language {language} displayed as {expected_display}"
-
-        self.print_test_info(f"{description} (Test #{test_id})", test_result)
-
-    @pytest.mark.parametrize(
-        "test_id, description, format_option, expected_display",
-        [
-            (1, "Table format", "table", "TABLE"),
-            (2, "Format missing argument", None, None),
-        ],
-    )
-    @patch("opensearchsql_cli.main.sql_connection")
-    @patch("opensearchsql_cli.main.sql_library_manager")
-    @patch("opensearchsql_cli.main.sql_version")
-    @patch("opensearchsql_cli.main.config_manager")
-    @patch("opensearchsql_cli.main.console")
-    @patch("opensearchsql_cli.main.pyfiglet.figlet_format")
-    def test_format_command(
-        self,
-        mock_figlet,
-        mock_console,
-        mock_config_manager,
-        mock_version_manager,
-        mock_library_manager,
-        mock_sql_connection,
-        test_id,
-        description,
-        format_option,
-        expected_display,
-    ):
-        """
-        Test the -f/--format command for different format options.
-        """
-
-        self.print_test_info(f"{description} (Test #{test_id})")
-
-        if format_option == None:
-            # Test missing argument case
-            result, test_result = self._check_missing_arg(
-                "-f", "Option '-f' requires an argument"
-            )
-        else:
-            # Setup test environment
-            cli, command_args = self.setup_cli_test(
-                mock_console,
-                mock_config_manager,
-                mock_version_manager,
-                mock_library_manager,
-                mock_sql_connection,
-                mock_figlet,
-                endpoint="test:9200",
-                format=format_option,
-            )
-
-            result = runner.invoke(cli.app, command_args)
-
-            assert result.exit_code == 0
-
-            mock_console.print.assert_any_call(
-                f"[green]Format:[/green] [dim white]{expected_display}[/dim white]"
-            )
-
-            # Verify that shell.start was called with the correct format parameter
-            cli.shell.start.assert_called_once_with("ppl", format_option)
-
-            test_result = f"Format {format_option} displayed as {expected_display}"
-        self.print_test_info(f"{description} (Test #{test_id})", test_result)
-
-    @pytest.mark.parametrize(
-        "test_id, description, version, rebuild, version_success",
-        [
-            (1, "Valid version", "3.1", False, True),
-            (2, "Version with rebuild flag", "3.1", True, True),
-            (3, "Version missing argument", None, False, True),
-        ],
-    )
-    @patch("opensearchsql_cli.main.sql_connection")
-    @patch("opensearchsql_cli.main.sql_library_manager")
-    @patch("opensearchsql_cli.main.sql_version")
-    @patch("opensearchsql_cli.main.config_manager")
-    @patch("opensearchsql_cli.main.console")
-    @patch("opensearchsql_cli.main.pyfiglet.figlet_format")
-    def test_version_command(
-        self,
-        mock_figlet,
-        mock_console,
-        mock_config_manager,
-        mock_version_manager,
-        mock_library_manager,
-        mock_sql_connection,
-        test_id,
-        description,
-        version,
         rebuild,
         version_success,
     ):
         """
-        Test the -v/--version command for different version options.
+        Test for language, format, and version commands.
+
+        Args:
+            command_type: Type of command to test ('language', 'format', or 'version')
+            value: Value to pass to the command (or None for missing argument test)
+            expected_display: Expected display value (or None for missing argument test)
+            rebuild: Whether to include the --rebuild flag (for version command only)
+            version_success: Whether version setting should succeed (for version command only)
         """
         self.print_test_info(f"{description} (Test #{test_id})")
 
-        if version == None:
+        # Map command type to flag
+        flag_map = {
+            "language": "-l",
+            "format": "-f",
+            "version": "-v",
+        }
+        flag = flag_map[command_type]
+
+        if value is None:
             # Test missing argument case
             result, test_result = self._check_missing_arg(
-                "-v", "Option '-v' requires an argument"
+                flag, f"Option '{flag}' requires an argument"
             )
         else:
-            # Setup test environment
+            # Setup test environment with appropriate parameters based on command type
+            kwargs = {
+                "endpoint": "test:9200",
+                command_type: value,
+            }
+
+            # Add rebuild flag for version command if needed
+            if command_type == "version" and rebuild:
+                kwargs["rebuild"] = True
+                kwargs["version_success"] = version_success
+
             cli, command_args = self.setup_cli_test(
                 mock_console,
                 mock_config_manager,
@@ -566,29 +474,42 @@ class TestCommands:
                 mock_library_manager,
                 mock_sql_connection,
                 mock_figlet,
-                endpoint="test:9200",
-                version=version,
-                rebuild=rebuild,
-                version_success=version_success,
+                **kwargs,
             )
 
             result = runner.invoke(cli.app, command_args)
-
             assert result.exit_code == 0
 
-            # Verify that set_version was called with the correct parameters
-            mock_version_manager.set_version.assert_called_once_with(version, rebuild)
+            # Verify behavior based on command type
+            if command_type == "language":
+                if expected_display:
+                    mock_console.print.assert_any_call(
+                        f"[green]Language:[/green] [dim white]{expected_display}[/dim white]"
+                    )
+                    # Verify that shell.start was called with the correct language parameter
+                    cli.shell.start.assert_called_once_with(value, "table")
+                test_result = f"Language {value} displayed as {expected_display}"
 
-            # Verify specific behavior based on version success
-            if version_success:
-                mock_console.print.assert_any_call(
-                    f"[green]SQL:[/green] [dim white]v{mock_version_manager.version}[/dim white]"
-                )
-                test_result = f"Version {version} set successfully"
-            else:
-                mock_version_manager.set_version.assert_called_once_with(
-                    version, rebuild
-                )
-                test_result = f"Version {version} failed as expected"
+            elif command_type == "format":
+                if expected_display:
+                    mock_console.print.assert_any_call(
+                        f"[green]Format:[/green] [dim white]{expected_display}[/dim white]"
+                    )
+                    # Verify that shell.start was called with the correct format parameter
+                    cli.shell.start.assert_called_once_with("ppl", value)
+                test_result = f"Format {value} displayed as {expected_display}"
+
+            elif command_type == "version":
+                # Verify that set_version was called with the correct parameters
+                mock_version_manager.set_version.assert_called_once_with(value, rebuild)
+
+                # Verify specific behavior based on version success
+                if version_success:
+                    mock_console.print.assert_any_call(
+                        f"[green]SQL:[/green] [dim white]{expected_display}[/dim white]"
+                    )
+                    test_result = f"Version {value} set successfully"
+                else:
+                    test_result = f"Version {value} failed as expected"
 
         self.print_test_info(f"{description} (Test #{test_id})", test_result)
