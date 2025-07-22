@@ -85,7 +85,7 @@ class TestSqlVersion:
             True,
         ]  # First call returns False, second call returns True
 
-        # We need to handle multiple calls to os.path.join
+        # Need to handle multiple calls to os.path.join
         def join_side_effect(*args):
             if args[-1] == "build.log":
                 return "/mock/path/build.log"

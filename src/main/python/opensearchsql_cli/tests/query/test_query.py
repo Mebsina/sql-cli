@@ -139,9 +139,8 @@ class TestQuery:
 
     # Comprehensive parameterized test covering all test cases
     @pytest.mark.parametrize(
-        "test_params",
+        "test_case_num, test_case_name, query, is_ppl_mode, is_explain, format, is_vertical, expected_success, fixture_name",
         [
-            # Format: (test_case_num, test_case_name, query, is_ppl_mode, is_explain, format, is_vertical, expected_success, fixture_name)
             # PPL test
             (
                 1,
@@ -345,27 +344,36 @@ class TestQuery:
         ],
     )
     @patch("opensearchsql_cli.query.execute_query.console")
-    def test_query_parameterized(self, mock_console, test_params, request):
+    def test_query_parameterized(
+        self,
+        mock_console,
+        test_case_num,
+        test_case_name,
+        query,
+        is_ppl_mode,
+        is_explain,
+        format,
+        is_vertical,
+        expected_success,
+        fixture_name,
+        request,
+    ):
         """
         Parameterized test for executing queries with different configurations.
 
         Args:
             mock_console: Mocked console object
-            test_params: Tuple containing test parameters
+            test_case_num: Test case number for display
+            test_case_name: Test case name for display
+            query: Query to execute
+            is_ppl_mode: Whether to use PPL mode (True) or SQL mode (False)
+            is_explain: Whether to use explain mode
+            format: Output format (table, csv, json)
+            is_vertical: Whether to use vertical table format
+            expected_success: Whether the query is expected to succeed
+            fixture_name: Name of the fixture to use for mock response
             request: pytest request fixture for accessing other fixtures
         """
-        (
-            test_case_num,
-            test_case_name,
-            query,
-            is_ppl_mode,
-            is_explain,
-            format,
-            is_vertical,
-            expected_success,
-            fixture_name,
-        ) = test_params
-
         # Get the mock response from the fixture
         mock_response = request.getfixturevalue(fixture_name)
 
