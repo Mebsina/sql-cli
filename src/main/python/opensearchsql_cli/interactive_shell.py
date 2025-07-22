@@ -77,7 +77,7 @@ class InteractiveShell:
                 -s --load <name>       - Load and display a saved query result
                 -s --remove <name>     - Remove a saved query by name
                 -s --list              - List all saved query names
-                help                   - Show this help
+                -h/help                - Show this help
                 exit/quit/q            - Exit interactive mode
                 [/dim white]
 [green]NOTE:[/green] To use a different OpenSearch SQL plug-in version, restart the CLI with --version <version>
