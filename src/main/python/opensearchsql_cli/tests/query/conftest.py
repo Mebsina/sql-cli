@@ -63,6 +63,43 @@ def mock_json_response():
 
 
 @pytest.fixture
+def mock_table_response():
+    """
+    Fixture that returns a mock table response.
+    This is the formatted horizontal table output for display.
+    """
+    return """
+Fetched 1 rows with a total of 1 hits
+┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━┓
+┃ name  ┃ hire_date           ┃ department  ┃ age ┃
+┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━┩
+│ Test  │ 1999-01-01 00:00:00 │ Engineering │ 20  │
+├───────┼─────────────────────┼─────────────┼─────┤
+"""
+
+
+@pytest.fixture
+def mock_vertical_response():
+    """
+    Fixture that returns a mock vertical table response.
+    This is the formatted vertical table output for display.
+    """
+    return """
+Fetched 1 rows with a total of 1 hits
+              RECORD 1              
+┌────────────┬─────────────────────┐
+│ name       │ Test                │
+├────────────┼─────────────────────┤
+│ hire_date  │ 1999-01-01 00:00:00 │
+├────────────┼─────────────────────┤
+│ department │ Engineering         │
+├────────────┼─────────────────────┤
+│ age        │ 20                  │
+└────────────┴─────────────────────┘
+"""
+
+
+@pytest.fixture
 def mock_calcite_explain():
     """
     Fixture that returns a mock Calcite explain plan.
