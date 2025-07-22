@@ -216,6 +216,8 @@ You can also configure the following connection properties:
 | `CALCITE_PUSHDOWN_ROWCOUNT_ESTIMATION_FACTOR`   | Row count estimation factor for pushdown                                   | `1.0`    |
 | `SQL_CURSOR_KEEP_ALIVE`                         | Cursor keep-alive time in minutes                                          | `1`      |
 
+> **Note**: **PPL Calcite** result is limited by `QUERY_SIZE_LIMIT` number
+
 For a list of all available configurations, see [config.yaml](src/main/python/opensearchsql_cli/config/config.yaml).
 
 
