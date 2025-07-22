@@ -244,19 +244,19 @@ class TestInteractiveShell:
 
         # Simulate user inputs
         mock_session.prompt.side_effect = [
-            "help", 
-            "-l sql",  
+            "help",
+            "-l sql",
             "-l ppl",
-            "-f json",  
-            "-f invalid",  
-            "-v",  
-            "-s --list",  
-            "-s --save test", 
-            "-s --load test",  
-            "-s --remove test",  
-            "-s",  
-            "select * from test", 
-            "exit",  
+            "-f json",
+            "-f invalid",
+            "-v",
+            "-s --list",
+            "-s --save test",
+            "-s --load test",
+            "-s --remove test",
+            "-s",
+            "select * from test",
+            "exit",
         ]
 
         mock_config_manager.get_boolean.return_value = False
