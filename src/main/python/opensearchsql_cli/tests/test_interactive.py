@@ -244,19 +244,19 @@ class TestInteractiveShell:
 
         # Simulate user inputs
         mock_session.prompt.side_effect = [
-            "help",  # Help command
-            "-l sql",  # Change language to SQL
-            "-l ppl",  # Change language back to PPL
-            "-f json",  # Change format to JSON
-            "-f invalid",  # Invalid format
-            "-v",  # Toggle vertical mode
-            "-s --list",  # List saved queries
-            "-s --save test",  # Save query
-            "-s --load test",  # Load query
-            "-s --remove test",  # Remove query
-            "-s",  # Invalid -s command
-            "select * from test",  # Execute query
-            "exit",  # Exit
+            "help", 
+            "-l sql",  
+            "-l ppl",
+            "-f json",  
+            "-f invalid",  
+            "-v",  
+            "-s --list",  
+            "-s --save test", 
+            "-s --load test",  
+            "-s --remove test",  
+            "-s",  
+            "select * from test", 
+            "exit",  
         ]
 
         mock_config_manager.get_boolean.return_value = False
