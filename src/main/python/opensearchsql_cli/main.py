@@ -126,13 +126,13 @@ class OpenSearchSQLCLI:
                 success = sql_version.set_version(version, rebuild)
                 if not success:
                     return
-            # else:
-            #     # Try to get version from config file
-            #     config_version = config_manager.get("Query", "version", None)
-            #     if config_version:
-            #         success = sql_version.set_version(config_version, rebuild)
-            #         if not success:
-            #             return
+            else:
+                # Try to get version from config file
+                config_version = config_manager.get("Query", "version", None)
+                if config_version:
+                    success = sql_version.set_version(config_version, rebuild)
+                    if not success:
+                        return
 
             # Get defaults from config if not provided
             if language is None:
