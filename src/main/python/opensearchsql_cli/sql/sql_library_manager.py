@@ -126,8 +126,8 @@ class SqlLibraryManager:
                 f"Initializing SQL Library at {time.strftime('%Y-%m-%d %H:%M:%S')}"
             )
 
-            # if use --version or -v then use accordingly, else './gradlew' run only for development
-            if len(sys.argv) > 1 and ("--version" in sys.argv or "-v" in sys.argv):
+            # if get version from -v or config
+            if sql_version.version:
                 # Use the JAR file according to Sql plugin version
                 jar_path = sql_version.get_jar_path(project_root)
                 cmd = ["java", "-jar", jar_path, "Gateway"]
