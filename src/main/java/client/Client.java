@@ -6,22 +6,18 @@
 package client;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
-import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
-import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
-import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
-import org.apache.hc.core5.function.Factory;
-import org.apache.hc.core5.http.EntityDetails;
-import org.apache.hc.core5.http.HttpHost;
-import org.apache.hc.core5.http.HttpRequest;
-import org.apache.hc.core5.http.HttpRequestInterceptor;
-import org.apache.hc.core5.http.nio.ssl.TlsStrategy;
-import org.apache.hc.core5.http.protocol.HttpContext;
-import org.apache.hc.core5.reactor.ssl.TlsDetails;
-import org.apache.hc.core5.ssl.SSLContextBuilder;
+import org.apache.http.Header;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContexts;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.RestHighLevelClient;
@@ -60,19 +56,19 @@ public class Client {
       Region region = new DefaultAwsRegionProviderChain().getRegion();
       System.out.println("Using AWS region: " + region);
 
-      HttpHost host = new HttpHost("https", awsEndpoint, 443);
+      HttpHost host = new HttpHost(awsEndpoint, 443, "https");
 
       // Create a custom interceptor to handle request signing
       HttpRequestInterceptor interceptor =
           new HttpRequestInterceptor() {
             @Override
-            public void process(HttpRequest request, EntityDetails entity, HttpContext context) {
+            public void process(HttpRequest request, HttpContext context) {
               // Create and apply the AWS SigV4 interceptor
               try {
-                client.aws.AwsRequestSigningApacheV5Interceptor awsInterceptor =
-                    new client.aws.AwsRequestSigningApacheV5Interceptor(
+                client.aws.AwsRequestSigningApacheInterceptor awsInterceptor =
+                    new client.aws.AwsRequestSigningApacheInterceptor(
                         serviceName, AwsV4HttpSigner.create(), credentialsProvider, region);
-                awsInterceptor.process(request, entity, context);
+                awsInterceptor.process(request, context);
 
               } catch (Exception e) {
                 System.err.println("Error in AWS request signing: " + e.getMessage());
@@ -81,8 +77,7 @@ public class Client {
             }
           };
 
-      // Add our URI modification and logging interceptors
-      HttpRequestInterceptor newShowURI = createNewShowURI();
+      // Add logging interceptor
       HttpRequestInterceptor loggingInterceptor = createLoggingInterceptor(true);
 
       // Build RestClientBuilder with interceptors
@@ -90,9 +85,8 @@ public class Client {
           RestClient.builder(host)
               .setHttpClientConfigCallback(
                   httpClientBuilder -> {
-                    httpClientBuilder.addRequestInterceptorFirst(newShowURI);
-                    httpClientBuilder.addRequestInterceptorLast(interceptor);
-                    httpClientBuilder.addRequestInterceptorLast(loggingInterceptor);
+                    httpClientBuilder.addInterceptorLast(interceptor);
+                    httpClientBuilder.addInterceptorLast(loggingInterceptor);
                     return httpClientBuilder;
                   });
 
@@ -107,25 +101,21 @@ public class Client {
   public static OpenSearchClient createHttpsClient(
       String host, int port, String username, String password, boolean ignoreSSL) {
     try {
-      final HttpHost httpHost = new HttpHost("https", host, port);
+      HttpHost httpHost = new HttpHost(host, port, "https");
 
       // For HTTPS: Set up credentials and SSL
-      final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+      final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
       if (username != null && password != null) {
         credentialsProvider.setCredentials(
-            new AuthScope(httpHost),
-            new UsernamePasswordCredentials(username, password.toCharArray()));
+            new AuthScope(httpHost), new UsernamePasswordCredentials(username, password));
       }
 
       // Set up SSL context
+      final TrustStrategy trustStrategy = (chains, authType) -> ignoreSSL;
       final SSLContext sslContext =
-          SSLContextBuilder.create()
-              // Trust certificates based on ignoreSSL flag
-              .loadTrustMaterial(null, (chains, authType) -> ignoreSSL)
-              .build();
+          SSLContexts.custom().loadTrustMaterial(null, trustStrategy).build();
 
-      // Create our interceptors
-      HttpRequestInterceptor newShowURI = createNewShowURI();
+      // Create interceptors
       HttpRequestInterceptor loggingInterceptor = createLoggingInterceptor(true);
 
       // Create RestHighLevelClient with SSL and authentication
@@ -134,32 +124,10 @@ public class Client {
               RestClient.builder(httpHost)
                   .setHttpClientConfigCallback(
                       httpClientBuilder -> {
-                        // Set up TLS strategy
-                        final TlsStrategy tlsStrategy =
-                            ClientTlsStrategyBuilder.create()
-                                .setSslContext(sslContext)
-                                .setTlsDetailsFactory(
-                                    new Factory<SSLEngine, TlsDetails>() {
-                                      @Override
-                                      public TlsDetails create(final SSLEngine sslEngine) {
-                                        return new TlsDetails(
-                                            sslEngine.getSession(),
-                                            sslEngine.getApplicationProtocol());
-                                      }
-                                    })
-                                .build();
-
-                        // Set up connection manager
-                        final PoolingAsyncClientConnectionManager connectionManager =
-                            PoolingAsyncClientConnectionManagerBuilder.create()
-                                .setTlsStrategy(tlsStrategy)
-                                .build();
-
                         return httpClientBuilder
                             .setDefaultCredentialsProvider(credentialsProvider)
-                            .setConnectionManager(connectionManager)
-                            .addRequestInterceptorFirst(newShowURI)
-                            .addRequestInterceptorLast(loggingInterceptor);
+                            .setSSLContext(sslContext)
+                            .addInterceptorLast(loggingInterceptor);
                       }));
 
       return new OpenSearchRestClientImpl(restHighLevelClient);
@@ -170,20 +138,17 @@ public class Client {
 
   public static OpenSearchClient createHttpClient(String host, int port) {
     try {
-      final HttpHost httpHost = new HttpHost("http", host, port);
+      final HttpHost httpHost = new HttpHost(host, port, "http");
 
-      // Create our interceptors
-      HttpRequestInterceptor newShowURI = createNewShowURI();
       HttpRequestInterceptor loggingInterceptor = createLoggingInterceptor(false);
 
+      // Create RestHighLevelClient with interceptor
       RestHighLevelClient restHighLevelClient =
           new RestHighLevelClient(
               RestClient.builder(httpHost)
                   .setHttpClientConfigCallback(
                       httpClientBuilder -> {
-                        return httpClientBuilder
-                            .addRequestInterceptorFirst(newShowURI)
-                            .addRequestInterceptorLast(loggingInterceptor);
+                        return httpClientBuilder.addInterceptorLast(loggingInterceptor);
                       }));
 
       return new OpenSearchRestClientImpl(restHighLevelClient);
@@ -192,59 +157,28 @@ public class Client {
     }
   }
 
-  /**
-   * Creates a URI modification interceptor for SHOW command Original URI:
-   * /?ignore_throttled=false&ignore_unavailable=false&expand_wildcards=open%2Cclosed&allow_no_indices=false&cluster_manager_timeout=30s
-   * Because Error: OpenSearchStatusException[OpenSearch exception [type=illegal_argument_exception,
-   * reason=request [/] contains unrecognized parameters: [allow_no_indices],
-   * [cluster_manager_timeout], [expand_wildcards], [ignore_throttled], [ignore_unavailable]]]
-   * Modified URI:: /*?
-   */
-  private static HttpRequestInterceptor createNewShowURI() {
-    return new HttpRequestInterceptor() {
-      @Override
-      public void process(HttpRequest request, EntityDetails entityDetails, HttpContext context) {
-        try {
-          // Get the original URI
-          String originalUri = request.getRequestUri();
-          System.out.println("Original URI: " + originalUri);
-
-          // Check if this is the exact URI
-          String wrongShowUri =
-              "/?ignore_throttled=false&ignore_unavailable=false&expand_wildcards=open%2Cclosed&allow_no_indices=false&cluster_manager_timeout=30s";
-          if (originalUri.equals(wrongShowUri)) {
-            // Replace URI to just /*?
-            request.setPath("/*?");
-            System.out.println("Modified Show URI: " + request.getRequestUri());
-          }
-        } catch (Exception e) {
-          System.err.println("Error modifying URI: " + e.getMessage());
-          e.printStackTrace();
-        }
-      }
-    };
-  }
-
   private static HttpRequestInterceptor createLoggingInterceptor(boolean isHttps) {
     final String protocol = isHttps ? "HTTPS" : "HTTP";
     return new HttpRequestInterceptor() {
       @Override
-      public void process(HttpRequest request, EntityDetails entityDetails, HttpContext context) {
+      public void process(HttpRequest request, HttpContext context) {
         System.out.println("===== " + protocol + " REQUEST =====");
-        System.out.println("Method: " + request.getMethod());
-        System.out.println("URI: " + request.getRequestUri());
+        System.out.println("Method: " + request.getRequestLine().getMethod());
+        System.out.println("URI: " + request.getRequestLine().getUri());
         System.out.println("Request Type: " + request.getClass().getSimpleName());
 
         // Log headers
         System.out.println("Headers:");
-        request
-            .headerIterator()
-            .forEachRemaining(
-                header -> System.out.println("  " + header.getName() + ": " + header.getValue()));
+        for (Header header : request.getAllHeaders()) {
+          System.out.println("  " + header.getName() + ": " + header.getValue());
+        }
 
-        if (entityDetails != null) {
-          System.out.println("Content Type: " + entityDetails.getContentType());
-          System.out.println("Content Length: " + entityDetails.getContentLength());
+        if (request instanceof HttpEntityEnclosingRequest) {
+          HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
+          if (entityRequest.getEntity() != null) {
+            System.out.println("Content Type: " + entityRequest.getEntity().getContentType());
+            System.out.println("Content Length: " + entityRequest.getEntity().getContentLength());
+          }
         }
         System.out.println("=====================");
       }

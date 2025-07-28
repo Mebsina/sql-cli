@@ -34,6 +34,9 @@ ext {
         // right now, will have to use it locally
         files('/Users/cnoramut/Documents/GitHub/sql/datasources/build/libs/datasources-3.1.0.0-SNAPSHOT.jar'),
         // OpenSearch
+        'org.opensearch.client:opensearch-rest-high-level-client:2.19.0',
+        'org.opensearch.client:opensearch-rest-client:2.19.0',
+        'org.opensearch.client:opensearch-java:2.19.0',
         'org.apache.calcite:calcite-core:1.40.0',
         'com.facebook.presto:presto-matching:0.293',
         'org.antlr:antlr4-runtime:4.7.1',
@@ -42,9 +45,9 @@ ext {
         'com.google.guava:guava:32.4.8-jre',
         // for OpenSearchRestClientImpl.java
         'org.projectlombok:lombok:1.18.38',
-        // HTTP5 
-        'org.apache.httpcomponents.core5:httpcore5:5.2',
-        'org.apache.httpcomponents.client5:httpclient5:5.2.1',
+        // HTTP4
+        'org.apache.httpcomponents:httpcore:4.4.16',
+        'org.apache.httpcomponents:httpclient:4.5.14',
         // AWS SDK v2 
         'software.amazon.awssdk:sdk-core:2.31.63',
         'software.amazon.awssdk:auth:2.31.63',
@@ -189,20 +192,20 @@ ext.createVersionConfigurations = { String version ->
             dependencies.add(configName, "org.opensearch.query:unified-query-${name}:${version}-SNAPSHOT")
         }
 
-        // Add OpenSearch client dependencies with appropriate version
-        def clientVersion = getOpenSearchClientVersion(version)
+        // // Add OpenSearch client dependencies with appropriate version
+        // def clientVersion = getOpenSearchClientVersion(version)
 
-        def opensearchClientDeps = [
-            'opensearch-rest-high-level-client',
-            'opensearch-rest-client',
-            'opensearch-java'
-        ]
+        // def opensearchClientDeps = [
+        //     'opensearch-rest-high-level-client',
+        //     'opensearch-rest-client',
+        //     'opensearch-java'
+        // ]
         
-        opensearchClientDeps.each { dep ->
-            dependencies.add(configName, "org.opensearch.client:${dep}:${clientVersion}")
-        }
+        // opensearchClientDeps.each { dep ->
+        //     dependencies.add(configName, "org.opensearch.client:${dep}:${clientVersion}")
+        // }
         
-        println "Using OpenSearch client version ${clientVersion} for version ${version}"
+        // println "Using OpenSearch client version ${clientVersion} for version ${version}"
 
         createShadowJarTask(configName, version, configurations[runtimeConfigName])
 
@@ -213,12 +216,12 @@ ext.createVersionConfigurations = { String version ->
 }
 
 // Create default v3_1_0_0 configuration at build time
-def defaultConfigName = createVersionConfigurations("3.1.0.0")
+def defaultConfigName = createVersionConfigurations("2.19.0.0")
 configurations.implementation.extendsFrom = [configurations.sharedDependency, configurations[defaultConfigName]] as Set
 
 tasks.register('setImplementationVersion') {
     doLast {
-        def version = project.hasProperty('version') ? project.getProperty('version') : '3.1.0.0'
+        def version = project.hasProperty('version') ? project.getProperty('version') : '2.19.0.0'
         def configName = project.ext.createVersionConfigurations(version)
 
         configurations.implementation.extendsFrom = [configurations.sharedDependency, configurations[configName]] as Set
